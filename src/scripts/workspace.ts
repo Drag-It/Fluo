@@ -1,8 +1,16 @@
 import { FluoNode, INodePosition } from "./node";
 
+export enum ICoarseDragTarget {
+	NONE,
+	BACKGROUND,
+	NODE,
+}
+
 export default class Workspace {
 	public context: CanvasRenderingContext2D;
 	public nodes: Array<FluoNode> = [];
+	public currentDragType: ICoarseDragTarget;
+	public currentDrag;
 
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.context = ctx;
@@ -12,10 +20,20 @@ export default class Workspace {
 		this.nodes.push(newNode);
 	}
 
-	changeAllNodePositions(newPositionDelta: INodePosition) {
+	translateALlNodes(newPositionDelta: INodePosition) {
 		this.nodes.forEach((node: FluoNode) => {
-			node.position.x += newPositionDelta.x;
-			node.position.y += newPositionDelta.y;
+			node.translate(newPositionDelta);
+		});
+	}
+
+	getOverlappingNode(position: INodePosition) {
+		return this.nodes.find((node: FluoNode) => {
+			return (
+				position.x >= node.position.x &&
+				position.x <= node.position.x + node.dimensions.width &&
+				position.y >= node.position.y &&
+				position.y <= node.position.y + node.dimensions.height
+			);
 		});
 	}
 

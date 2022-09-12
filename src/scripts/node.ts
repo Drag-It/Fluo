@@ -54,8 +54,22 @@ export class FluoNode {
 		this.drawNode();
 	}
 
+	translate(newPositionDelta: INodePosition) {
+		this.position.x += newPositionDelta.x;
+		this.position.y += newPositionDelta.y;
+	}
+
 	render() {
 		this.drawNode();
 		this.setContextWithStyleSettings();
+	}
+
+	isOverlapping(position: INodePosition) {
+		return (
+			position.x > this.position.x &&
+			position.x < this.position.x + this.dimensions.width &&
+			position.y > this.position.y &&
+			position.y < this.position.y + this.dimensions.height
+		);
 	}
 }
