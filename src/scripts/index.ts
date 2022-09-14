@@ -9,24 +9,45 @@ const ctx = canvas.getContext("2d");
 const style: INodeStyle = {
 	fillColour: "#1e293b",
 	strokeColour: "#334155",
+	inputFillColour: "#22c55e",
+	inputStrokeColour: "#166534",
 	strokeWidth: 2,
+	titleFontSize: 20,
+	fontColour: "#94a3b8",
+	padding: 5,
+	titleToConnectionPointsPadding: 15,
+	connectionPointRadius: 4,
+	interInputConnectionPadding: 30,
+	connectionPointToLabelPadding: 12,
+	connectionPointLabelFontSize: 14,
 };
 
 const workspace = new Workspace(ctx);
 
 const node = new FluoNode(
+	{
+		inputs: [
+			{ name: "arg1", type: Number },
+			{ name: "arg2", type: Number },
+			// { name: "arg3", type: Number },
+			// { name: "arg4", type: Number },
+		],
+		outputs: [{ name: "arg2", type: Number }],
+	},
 	workspace,
 	ctx,
-	{ x: 100, y: 200 },
-	{ width: 200, height: 100 },
+	{ x: 700, y: 200 },
 	style
 );
 
 const node2 = new FluoNode(
+	{
+		inputs: [{ name: "arg3", type: String }],
+		outputs: [{ name: "arg4", type: String }],
+	},
 	workspace,
 	ctx,
 	{ x: 100, y: 50 },
-	{ width: 200, height: 100 },
 	style
 );
 
@@ -34,15 +55,10 @@ document.addEventListener("mousemove", (event: MouseEvent) => {
 	if (event.target === canvas) {
 		if (event.buttons === 1) {
 			if (workspace.currentDragType === ICoarseDragTarget.NODE) {
-				workspace
-					.getOverlappingNode({
-						x: event.clientX,
-						y: event.clientY,
-					})
-					.translate({
-						x: event.movementX,
-						y: event.movementY,
-					});
+				workspace.selectedNode.position.x =
+					event.offsetX - workspace.selectedNodeOffset.x;
+				workspace.selectedNode.position.y =
+					event.offsetY - workspace.selectedNodeOffset.y;
 			} else {
 				workspace.translateALlNodes({
 					x: event.movementX,
@@ -57,9 +73,6 @@ function update() {
 	requestAnimationFrame(update);
 
 	workspace.clear();
-
-	// workspace.translateALlNodes({ x: 0.2, y: 0 });
-
 	workspace.render();
 }
 update();
@@ -69,13 +82,26 @@ document.addEventListener("mousedown", (event: MouseEvent) => {
 		document.body.style.cursor = "grabbing";
 	}
 
-	if (
-		workspace.getOverlappingNode({
-			x: event.clientX,
-			y: event.clientY,
-		})
-	) {
+	const overlapping = workspace.getOverlappingNode({
+		x: event.clientX,
+		y: event.clientY,
+	});
+	console.log(overlapping?.position);
+
+	if (overlapping) {
 		workspace.currentDragType = ICoarseDragTarget.NODE;
+		workspace.selectedNode = overlapping;
+		workspace.nodes.push(
+			workspace.nodes.splice(workspace.nodes.indexOf(overlapping), 1)[0]
+		);
+		workspace.selectedNodeOffset = {
+			x: event.clientX - overlapping.position.x,
+			y: event.clientY - overlapping.position.y,
+		};
+		overlapping.style.fillColour = "#334155";
+
+		// Bring this node to the end of the workspace nodes array
+		// so that it renders on top of the other nodes
 	} else {
 		workspace.currentDragType = ICoarseDragTarget.BACKGROUND;
 	}
@@ -84,6 +110,9 @@ document.addEventListener("mouseup", (event: MouseEvent) => {
 	if (event.target === canvas) {
 		document.body.style.cursor = "grab";
 	}
+	if (workspace.selectedNode)
+		workspace.selectedNode.style.fillColour = "#1e293b";
+	workspace.selectedNode = null;
 
 	workspace.currentDragType = ICoarseDragTarget.NONE;
 });

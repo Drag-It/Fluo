@@ -10,7 +10,8 @@ export default class Workspace {
 	public context: CanvasRenderingContext2D;
 	public nodes: Array<FluoNode> = [];
 	public currentDragType: ICoarseDragTarget;
-	public currentDrag;
+	public selectedNode: FluoNode;
+	public selectedNodeOffset: INodePosition;
 
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.context = ctx;
@@ -27,7 +28,7 @@ export default class Workspace {
 	}
 
 	getOverlappingNode(position: INodePosition) {
-		return this.nodes.find((node: FluoNode) => {
+		const arr = this.nodes.filter((node: FluoNode) => {
 			return (
 				position.x >= node.position.x &&
 				position.x <= node.position.x + node.dimensions.width &&
@@ -35,6 +36,7 @@ export default class Workspace {
 				position.y <= node.position.y + node.dimensions.height
 			);
 		});
+		return arr[arr.length - 1];
 	}
 
 	render() {
