@@ -32,6 +32,7 @@ export class FluoNode {
 	//#region Fields
 	name: string;
 	params: INodeParams;
+	workspace: Workspace;
 	context: CanvasRenderingContext2D;
 	position: IVector2;
 	style: INodeStyle;
@@ -48,6 +49,7 @@ export class FluoNode {
 	) {
 		this.name = name;
 		this.params = params;
+		this.workspace = workspace;
 		// Deep copy these props so the original references are not mutated when accessed.
 		this.position = JSON.parse(JSON.stringify(position));
 		this.context = ctx;
@@ -87,6 +89,15 @@ export class FluoNode {
 		);
 	}
 
+	// Scale
+	private s(value: number) {
+		return value * this.workspace.scale;
+	}
+	// Scale inverse
+	private si(value: number) {
+		return value / this.workspace.scale;
+	}
+
 	private drawNode() {
 		this.setContextWithStyleSettings();
 
@@ -96,10 +107,10 @@ export class FluoNode {
 
 		this.context.beginPath();
 		this.context.rect(
-			this.position.x,
-			this.position.y,
-			this.style.width,
-			nodeHeight
+			this.s(this.position.x),
+			this.s(this.position.y),
+			this.s(this.style.width),
+			this.s(nodeHeight)
 		);
 		this.context.fill();
 		this.context.stroke();
@@ -110,18 +121,20 @@ export class FluoNode {
 		//#region Draw the input connection points
 		this.params.inputs.forEach((input: INodeIO, index: number) => {
 			const yLevel =
-				this.position.y +
-				this.style.padding +
-				this.style.titleFontSize +
-				this.style.titleToConnectionPointsPadding +
-				index * this.style.interInputConnectionPadding +
-				this.style.connectionPointRadius;
+				this.s(this.position.y) +
+				this.s(this.style.padding) +
+				this.s(this.style.titleFontSize) +
+				this.s(this.style.titleToConnectionPointsPadding) +
+				index * this.s(this.style.interInputConnectionPadding) +
+				this.s(this.style.connectionPointRadius);
 			// Circle
 			this.context.beginPath();
 			this.context.arc(
-				this.position.x + this.style.padding + this.style.connectionPointRadius,
+				this.s(this.position.x) +
+					this.s(this.style.padding) +
+					this.s(this.style.connectionPointRadius),
 				yLevel,
-				this.style.connectionPointRadius,
+				this.s(this.style.connectionPointRadius),
 				0,
 				2 * Math.PI,
 				false
@@ -129,14 +142,14 @@ export class FluoNode {
 
 			// Label
 			this.context.font =
-				this.style.connectionPointLabelFontSize + "px Monospace";
+				this.s(this.style.connectionPointLabelFontSize) + "px Monospace";
 			this.context.fillText(
 				input.name,
-				this.position.x +
-					this.style.padding +
-					this.style.connectionPointRadius * 2 +
-					this.style.connectionPointToLabelPadding,
-				yLevel + this.style.connectionPointLabelFontSize / 4
+				this.s(this.position.x) +
+					this.s(this.style.padding) +
+					this.s(this.style.connectionPointRadius) * 2 +
+					this.s(this.style.connectionPointToLabelPadding),
+				yLevel + this.s(this.style.connectionPointLabelFontSize) / 4
 			);
 			this.context.fill();
 			this.context.stroke();
@@ -144,15 +157,20 @@ export class FluoNode {
 
 		//#endregion
 
+		//#region Node Title
 		this.context.fill();
 		this.context.stroke();
 		this.context.fillStyle = this.style.fontColour;
-		this.context.font = this.style.titleFontSize + "px Monospace";
+		this.context.font =
+			this.workspace.scale * this.style.titleFontSize + "px Monospace";
 		this.context.fillText(
 			this.name,
-			this.position.x + this.style.padding,
-			this.position.y + this.style.titleFontSize / 1.2 + this.style.padding
+			this.s(this.position.x) + this.s(this.style.padding),
+			this.s(this.position.y) +
+				this.s(this.style.titleFontSize / 1.2) +
+				this.s(this.style.padding)
 		);
+		//#endregion2
 	}
 
 	translate(newPositionDelta: IVector2) {
