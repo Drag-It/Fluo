@@ -97,7 +97,10 @@ export class FluoNode {
 			this.style.padding * 2 +
 			this.style.titleFontSize +
 			this.style.titleToConnectionPointsPadding +
-			this.style.connectionPointRadius * 2 +
+			(this.style.connectionPointRadius * 2 >
+			this.style.connectionPointLabelFontSize
+				? this.style.connectionPointRadius * 2
+				: this.style.connectionPointLabelFontSize) +
 			(this.params.inputs.length >= 2
 				? (this.params.inputs.length - 1) *
 				  this.style.interInputConnectionPadding
