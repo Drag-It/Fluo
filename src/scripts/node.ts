@@ -71,6 +71,24 @@ export class FluoNode {
 		this.context.font = this.style.titleFontSize + "px Monospace";
 	}
 
+	/*
+	const style: INodeStyle = {
+		fillColour: "#1e293b",
+		strokeColour: "#334155",
+		inputFillColour: "#22c55e",
+		inputStrokeColour: "#166534",
+		strokeWidth: 2,
+		titleFontSize: 20,
+		fontColour: "#94a3b8",
+		padding: 0,
+		titleToConnectionPointsPadding: 15,
+		connectionPointRadius: 4,
+		interInputConnectionPadding: 32,
+		connectionPointToLabelPadding: 12,
+		connectionPointLabelFontSize: 14,
+	};
+	*/
+
 	private drawNode() {
 		this.setContextWithStyleSettings();
 
@@ -79,9 +97,10 @@ export class FluoNode {
 			this.style.padding * 2 +
 			this.style.titleFontSize +
 			this.style.titleToConnectionPointsPadding +
-			this.params.inputs.length * this.style.connectionPointRadius * 2 +
+			this.style.connectionPointRadius * 2 +
 			(this.params.inputs.length >= 2
-				? this.params.inputs.length - 1 * this.style.interInputConnectionPadding
+				? (this.params.inputs.length - 1) *
+				  this.style.interInputConnectionPadding
 				: 0);
 		this.context.beginPath();
 		this.context.rect(this.position.x, this.position.y, 200, nodeHeight);
@@ -110,8 +129,6 @@ export class FluoNode {
 				2 * Math.PI,
 				false
 			);
-			this.context.fill();
-			this.context.stroke();
 
 			// Label
 			this.context.font =

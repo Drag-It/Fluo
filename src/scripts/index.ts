@@ -17,7 +17,7 @@ const style: INodeStyle = {
 	padding: 5,
 	titleToConnectionPointsPadding: 15,
 	connectionPointRadius: 4,
-	interInputConnectionPadding: 30,
+	interInputConnectionPadding: 32,
 	connectionPointToLabelPadding: 12,
 	connectionPointLabelFontSize: 14,
 };
@@ -48,6 +48,22 @@ const node2 = new FluoNode(
 	workspace,
 	ctx,
 	{ x: 100, y: 50 },
+	style
+);
+
+const node3 = new FluoNode(
+	{
+		inputs: [
+			{ name: "arg1", type: Number },
+			{ name: "arg2", type: Number },
+			{ name: "arg3", type: Number },
+			{ name: "arg4", type: Number },
+		],
+		outputs: [{ name: "arg4", type: String }],
+	},
+	workspace,
+	ctx,
+	{ x: 500, y: 200 },
 	style
 );
 
