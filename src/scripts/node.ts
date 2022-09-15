@@ -1,4 +1,5 @@
 import Workspace from "./workspace";
+import { IVector2 } from "./utils";
 
 //#region Public interfaces
 export interface INodeIO {
@@ -9,15 +10,12 @@ export interface INodeParams {
 	inputs: Array<INodeIO>;
 	outputs: Array<INodeIO>;
 }
-export interface INodePosition {
-	x: number;
-	y: number;
-}
 export interface INodeStyle {
 	fillColour?: string;
 	strokeColour?: string;
 	inputFillColour?: string;
 	inputStrokeColour?: string;
+	width?: number;
 	strokeWidth?: number;
 	titleFontSize?: number;
 	fontColour?: string;
@@ -29,36 +27,38 @@ export interface INodeStyle {
 	connectionPointLabelFontSize?: number;
 }
 //#endregion
-//#region Private interfaces
-interface INodeDimensions {
-	width: number;
-	height: number;
-}
-//#endregion
 
 export class FluoNode {
 	//#region Fields
+	name: string;
 	params: INodeParams;
 	context: CanvasRenderingContext2D;
-	position: INodePosition;
+	position: IVector2;
 	style: INodeStyle;
 
-	private dimensions: INodeDimensions;
+	dimensions: IVector2;
 	//#endregion
 	constructor(
+		name: string,
 		params: INodeParams,
 		workspace: Workspace,
 		ctx: CanvasRenderingContext2D,
-		position: INodePosition,
+		position: IVector2,
 		nodeStyle: INodeStyle
 	) {
-		workspace.addNode(this);
+		this.name = name;
 		this.params = params;
 		// Deep copy these props so the original references are not mutated when accessed.
 		this.position = JSON.parse(JSON.stringify(position));
 		this.context = ctx;
 		this.style = JSON.parse(JSON.stringify(nodeStyle));
 
+		this.dimensions = {
+			x: this.style.width,
+			y: this.calculateNodeHeight(),
+		};
+
+		workspace.addNode(this);
 		this.setContextWithStyleSettings();
 		this.drawNode();
 	}
@@ -71,29 +71,8 @@ export class FluoNode {
 		this.context.font = this.style.titleFontSize + "px Monospace";
 	}
 
-	/*
-	const style: INodeStyle = {
-		fillColour: "#1e293b",
-		strokeColour: "#334155",
-		inputFillColour: "#22c55e",
-		inputStrokeColour: "#166534",
-		strokeWidth: 2,
-		titleFontSize: 20,
-		fontColour: "#94a3b8",
-		padding: 0,
-		titleToConnectionPointsPadding: 15,
-		connectionPointRadius: 4,
-		interInputConnectionPadding: 32,
-		connectionPointToLabelPadding: 12,
-		connectionPointLabelFontSize: 14,
-	};
-	*/
-
-	private drawNode() {
-		this.setContextWithStyleSettings();
-
-		//#region Draw the node body
-		const nodeHeight =
+	private calculateNodeHeight() {
+		return (
 			this.style.padding * 2 +
 			this.style.titleFontSize +
 			this.style.titleToConnectionPointsPadding +
@@ -104,9 +83,24 @@ export class FluoNode {
 			(this.params.inputs.length >= 2
 				? (this.params.inputs.length - 1) *
 				  this.style.interInputConnectionPadding
-				: 0);
+				: 0)
+		);
+	}
+
+	private drawNode() {
+		this.setContextWithStyleSettings();
+
+		//#region Draw the node body
+		const nodeHeight = this.calculateNodeHeight();
+		this.dimensions.y = nodeHeight;
+
 		this.context.beginPath();
-		this.context.rect(this.position.x, this.position.y, 200, nodeHeight);
+		this.context.rect(
+			this.position.x,
+			this.position.y,
+			this.style.width,
+			nodeHeight
+		);
 		this.context.fill();
 		this.context.stroke();
 		//#endregion
@@ -155,13 +149,13 @@ export class FluoNode {
 		this.context.fillStyle = this.style.fontColour;
 		this.context.font = this.style.titleFontSize + "px Monospace";
 		this.context.fillText(
-			"Node",
+			this.name,
 			this.position.x + this.style.padding,
 			this.position.y + this.style.titleFontSize / 1.2 + this.style.padding
 		);
 	}
 
-	translate(newPositionDelta: INodePosition) {
+	translate(newPositionDelta: IVector2) {
 		this.position.x += newPositionDelta.x;
 		this.position.y += newPositionDelta.y;
 	}
@@ -171,12 +165,12 @@ export class FluoNode {
 		this.drawNode();
 	}
 
-	isOverlapping(position: INodePosition) {
+	isOverlapping(position: IVector2) {
 		return (
 			position.x > this.position.x &&
-			position.x < this.position.x + this.dimensions.width &&
+			position.x < this.position.x + this.dimensions.x &&
 			position.y > this.position.y &&
-			position.y < this.position.y + this.dimensions.height
+			position.y < this.position.y + this.dimensions.y
 		);
 	}
 	//#endregion

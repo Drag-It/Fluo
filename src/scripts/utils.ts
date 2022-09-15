@@ -1,15 +1,17 @@
-export interface IPosition2 {
+interface IVector2 {
 	x: number;
 	y: number;
 }
-export interface IPosition3 {
+interface IVector3 {
 	x: number;
 	y: number;
 	z: number;
 }
 
-export function fact(x) {
+function fact(x) {
 	return x == 0 ? 1 : x * fact(x - 1);
 }
 
-export function canvasText(position: IPosition2, textContent: string) {}
+function canvasText(position: IVector2, textContent: string) {}
+
+export { IVector2, IVector3, fact, canvasText };

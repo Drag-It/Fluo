@@ -11,6 +11,7 @@ const style: INodeStyle = {
 	strokeColour: "#334155",
 	inputFillColour: "#22c55e",
 	inputStrokeColour: "#166534",
+	width: 200,
 	strokeWidth: 2,
 	titleFontSize: 20,
 	fontColour: "#94a3b8",
@@ -25,6 +26,7 @@ const style: INodeStyle = {
 const workspace = new Workspace(ctx);
 
 const node = new FluoNode(
+	"Node 1",
 	{
 		inputs: [
 			{ name: "arg1", type: Number },
@@ -41,6 +43,7 @@ const node = new FluoNode(
 );
 
 const node2 = new FluoNode(
+	"Node 2",
 	{
 		inputs: [{ name: "arg3", type: String }],
 		outputs: [{ name: "arg4", type: String }],
@@ -52,6 +55,7 @@ const node2 = new FluoNode(
 );
 
 const node3 = new FluoNode(
+	"Node 3",
 	{
 		inputs: [
 			{ name: "arg1", type: Number },
@@ -102,7 +106,6 @@ document.addEventListener("mousedown", (event: MouseEvent) => {
 		x: event.clientX,
 		y: event.clientY,
 	});
-	console.log(overlapping?.position);
 
 	if (overlapping) {
 		workspace.currentDragType = ICoarseDragTarget.NODE;

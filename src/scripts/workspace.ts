@@ -1,4 +1,5 @@
-import { FluoNode, INodePosition } from "./node";
+import { FluoNode } from "./node";
+import { IVector2 } from "./utils";
 
 export enum ICoarseDragTarget {
 	NONE,
@@ -11,7 +12,7 @@ export default class Workspace {
 	public nodes: Array<FluoNode> = [];
 	public currentDragType: ICoarseDragTarget;
 	public selectedNode: FluoNode;
-	public selectedNodeOffset: INodePosition;
+	public selectedNodeOffset: IVector2;
 
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.context = ctx;
@@ -21,19 +22,19 @@ export default class Workspace {
 		this.nodes.push(newNode);
 	}
 
-	translateALlNodes(newPositionDelta: INodePosition) {
+	translateALlNodes(newPositionDelta: IVector2) {
 		this.nodes.forEach((node: FluoNode) => {
 			node.translate(newPositionDelta);
 		});
 	}
 
-	getOverlappingNode(position: INodePosition) {
+	getOverlappingNode(position: IVector2) {
 		const arr = this.nodes.filter((node: FluoNode) => {
 			return (
 				position.x >= node.position.x &&
-				position.x <= node.position.x + node.dimensions.width &&
+				position.x <= node.position.x + node.dimensions.x &&
 				position.y >= node.position.y &&
-				position.y <= node.position.y + node.dimensions.height
+				position.y <= node.position.y + node.dimensions.y
 			);
 		});
 		return arr[arr.length - 1];
