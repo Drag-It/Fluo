@@ -69,7 +69,7 @@ export class FluoNode {
 	private setContextWithStyleSettings() {
 		this.context.fillStyle = this.style.fillColour;
 		this.context.strokeStyle = this.style.strokeColour;
-		this.context.lineWidth = this.style.strokeWidth;
+		this.context.lineWidth = this.s(this.style.strokeWidth);
 		this.context.font = this.style.titleFontSize + "px Monospace";
 	}
 

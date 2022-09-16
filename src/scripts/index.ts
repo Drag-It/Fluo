@@ -70,11 +70,3 @@ const node3 = new FluoNode(
 	{ x: 500, y: 200 },
 	style
 );
-
-function update() {
-	requestAnimationFrame(update);
-
-	workspace.clear();
-	workspace.render();
-}
-update();

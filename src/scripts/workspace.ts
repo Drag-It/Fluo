@@ -36,9 +36,9 @@ export default class Workspace {
 		this.nodes.push(newNode);
 	}
 
-	translateALlNodes(newPositionDelta: IVector2) {
+	translateALlNodes(fn: Function) {
 		this.nodes.forEach((node: FluoNode) => {
-			node.translate(newPositionDelta);
+			node.translate(fn(node));
 		});
 	}
 
@@ -84,6 +84,9 @@ export default class Workspace {
 			if (overlapping) {
 				this.currentDragType = ICoarseDragTarget.NODE;
 				this.selectedNode = overlapping;
+
+				// Bring this node to the end of the workspace nodes array
+				// so that it renders on top of the other nodes
 				this.nodes.push(
 					this.nodes.splice(this.nodes.indexOf(overlapping), 1)[0]
 				);
@@ -92,12 +95,11 @@ export default class Workspace {
 					y: event.clientY - this.s(overlapping.position.y),
 				};
 				overlapping.style.fillColour = "#334155";
-
-				// Bring this node to the end of the workspace nodes array
-				// so that it renders on top of the other nodes
 			} else {
 				this.currentDragType = ICoarseDragTarget.BACKGROUND;
 			}
+
+			this.render();
 		});
 		document.addEventListener("mouseup", (event: MouseEvent) => {
 			if (event.target === this.context.canvas) {
@@ -107,6 +109,8 @@ export default class Workspace {
 			this.selectedNode = null;
 
 			this.currentDragType = ICoarseDragTarget.NONE;
+
+			this.render();
 		});
 		document.addEventListener("mousemove", (event: MouseEvent) => {
 			if (event.target === this.context.canvas) {
@@ -117,31 +121,47 @@ export default class Workspace {
 						this.selectedNode.position.y =
 							this.si(event.offsetY) - this.si(this.selectedNodeOffset.y);
 					} else {
-						this.translateALlNodes({
-							x: this.si(event.movementX),
-							y: this.si(event.movementY),
+						this.translateALlNodes((node: FluoNode) => {
+							return {
+								x: this.si(event.movementX),
+								y: this.si(event.movementY),
+							};
 						});
 					}
 				}
 			}
+
+			this.render();
 		});
 		document.addEventListener("wheel", (event) => {
-			console.info(event);
 			if (event.deltaY == 0) return;
 			else if (event.deltaY < 0) {
 				if (this.scale > 0.1) {
 					this.scale /= event.deltaY / -100;
-					// TODO: Translate all nodes on scroll
+					// this.translateALlNodes((node: FluoNode) => {
+					// 	return {
+					// 		x: this.si(event.clientX - node.position.x) / 5,
+					// 		y: this.si(event.clientY - node.position.y) / 5,
+					// 	};
+					// });
 				} else {
 					this.scale = 0.1;
 				}
 			} else {
-				if (this.scale < 100) {
+				if (this.scale < 5) {
 					this.scale *= event.deltaY / 100;
+					// this.translateALlNodes((node: FluoNode) => {
+					// 	return {
+					// 		x: this.si(node.position.x - this.s(event.clientX)) / 5,
+					// 		y: this.si(node.position.y - this.s(event.clientY)) / 5,
+					// 	};
+					// });
 				} else {
-					this.scale = 100;
+					this.scale = 5;
 				}
 			}
+
+			this.render();
 		});
 	}
 }
