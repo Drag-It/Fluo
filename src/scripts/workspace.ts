@@ -137,15 +137,14 @@ export default class Workspace {
 			this.render();
 		});
 		document.addEventListener("wheel", (event) => {
-			console.info(event);
 			if (event.deltaY == 0) return;
 			else if (event.deltaY < 0) {
 				if (this.scale > 0.1) {
-					this.scale /= event.deltaY / -100;
+					this.scale /= 1.1;
 					// this.translateALlNodes((node: FluoNode) => {
 					// 	return {
-					// 		x: this.si(event.clientX - node.position.x) / 5,
-					// 		y: this.si(event.clientY - node.position.y) / 5,
+					// 		x: this.si(event.clientX - node.position.x),
+					// 		y: this.si(event.clientY - node.position.y),
 					// 	};
 					// });
 				} else {
@@ -153,7 +152,7 @@ export default class Workspace {
 				}
 			} else {
 				if (this.scale < 5) {
-					this.scale *= event.deltaY / 100;
+					this.scale *= 1.1;
 					// this.translateALlNodes((node: FluoNode) => {
 					// 	return {
 					// 		x: this.si(node.position.x - this.s(event.clientX)) / 5,
