@@ -71,6 +71,9 @@ export default class Workspace {
 	}
 
 	registerEvents() {
+		window.onload = () => {
+			document.body.style.background = this.context.canvas.style.background;
+		};
 		document.addEventListener("mousedown", (event: MouseEvent) => {
 			if (event.target === this.context.canvas) {
 				document.body.style.cursor = "grabbing";
@@ -134,6 +137,7 @@ export default class Workspace {
 			this.render();
 		});
 		document.addEventListener("wheel", (event) => {
+			console.info(event);
 			if (event.deltaY == 0) return;
 			else if (event.deltaY < 0) {
 				if (this.scale > 0.1) {
@@ -163,5 +167,19 @@ export default class Workspace {
 
 			this.render();
 		});
+		// document.addEventListener("resize", () => {
+		// 	console.log(123);
+		// 	this.context.canvas.height = window.innerHeight;
+		// 	this.context.canvas.width = window.innerWidth;
+
+		// 	this.render();
+		// });
+		window.onresize = () => {
+			console.log("resized!");
+
+			this.context.canvas.height = window.innerHeight;
+			this.context.canvas.width = window.innerWidth;
+			this.render();
+		};
 	}
 }
