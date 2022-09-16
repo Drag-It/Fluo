@@ -140,7 +140,7 @@ export default class Workspace {
 			if (event.deltaY == 0) return;
 			else if (event.deltaY < 0) {
 				if (this.scale > 0.1) {
-					this.scale /= 1.1;
+					this.scale *= 1.1;
 					// this.translateALlNodes((node: FluoNode) => {
 					// 	return {
 					// 		x: this.si(event.clientX - node.position.x),
@@ -152,7 +152,7 @@ export default class Workspace {
 				}
 			} else {
 				if (this.scale < 5) {
-					this.scale *= 1.1;
+					this.scale /= 1.1;
 					// this.translateALlNodes((node: FluoNode) => {
 					// 	return {
 					// 		x: this.si(node.position.x - this.s(event.clientX)) / 5,
