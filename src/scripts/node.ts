@@ -69,7 +69,7 @@ export class FluoNode {
 	private setContextWithStyleSettings() {
 		this.context.fillStyle = this.style.fillColour;
 		this.context.strokeStyle = this.style.strokeColour;
-		this.context.lineWidth = this.s(this.style.strokeWidth);
+		this.context.lineWidth = this.style.strokeWidth;
 		this.context.font = this.style.titleFontSize + "px Monospace";
 	}
 
@@ -89,15 +89,6 @@ export class FluoNode {
 		);
 	}
 
-	// Scale
-	private s(value: number) {
-		return value * this.workspace.scale;
-	}
-	// Scale inverse
-	private si(value: number) {
-		return value / this.workspace.scale;
-	}
-
 	private drawNode() {
 		this.setContextWithStyleSettings();
 
@@ -107,10 +98,10 @@ export class FluoNode {
 
 		this.context.beginPath();
 		this.context.rect(
-			this.s(this.position.x),
-			this.s(this.position.y),
-			this.s(this.style.width),
-			this.s(nodeHeight)
+			this.position.x,
+			this.position.y,
+			this.style.width,
+			nodeHeight
 		);
 		this.context.fill();
 		this.context.stroke();
@@ -121,20 +112,18 @@ export class FluoNode {
 		//#region Draw the input connection points
 		this.params.inputs.forEach((input: INodeIO, index: number) => {
 			const yLevel =
-				this.s(this.position.y) +
-				this.s(this.style.padding) +
-				this.s(this.style.titleFontSize) +
-				this.s(this.style.titleToConnectionPointsPadding) +
-				index * this.s(this.style.interInputConnectionPadding) +
-				this.s(this.style.connectionPointRadius);
+				this.position.y +
+				this.style.padding +
+				this.style.titleFontSize +
+				this.style.titleToConnectionPointsPadding +
+				index * this.style.interInputConnectionPadding +
+				this.style.connectionPointRadius;
 			// Circle
 			this.context.beginPath();
 			this.context.arc(
-				this.s(this.position.x) +
-					this.s(this.style.padding) +
-					this.s(this.style.connectionPointRadius),
+				this.position.x + this.style.padding + this.style.connectionPointRadius,
 				yLevel,
-				this.s(this.style.connectionPointRadius),
+				this.style.connectionPointRadius,
 				0,
 				2 * Math.PI,
 				false
@@ -142,14 +131,14 @@ export class FluoNode {
 
 			// Label
 			this.context.font =
-				this.s(this.style.connectionPointLabelFontSize) + "px Monospace";
+				this.style.connectionPointLabelFontSize + "px Monospace";
 			this.context.fillText(
 				input.name,
-				this.s(this.position.x) +
-					this.s(this.style.padding) +
-					this.s(this.style.connectionPointRadius) * 2 +
-					this.s(this.style.connectionPointToLabelPadding),
-				yLevel + this.s(this.style.connectionPointLabelFontSize) / 4
+				this.position.x +
+					this.style.padding +
+					this.style.connectionPointRadius * 2 +
+					this.style.connectionPointToLabelPadding,
+				yLevel + this.style.connectionPointLabelFontSize / 4
 			);
 			this.context.fill();
 			this.context.stroke();
@@ -161,14 +150,11 @@ export class FluoNode {
 		this.context.fill();
 		this.context.stroke();
 		this.context.fillStyle = this.style.fontColour;
-		this.context.font =
-			this.workspace.scale * this.style.titleFontSize + "px Monospace";
+		this.context.font = this.style.titleFontSize + "px Monospace";
 		this.context.fillText(
 			this.name,
-			this.s(this.position.x) + this.s(this.style.padding),
-			this.s(this.position.y) +
-				this.s(this.style.titleFontSize / 1.2) +
-				this.s(this.style.padding)
+			this.position.x + this.style.padding,
+			this.position.y + this.style.titleFontSize / 1.2 + this.style.padding
 		);
 		//#endregion2
 	}

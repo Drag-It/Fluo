@@ -14,22 +14,10 @@ export default class Workspace {
 	public selectedNode: FluoNode;
 	public selectedNodeOffset: IVector2;
 
-	scale: number;
-
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.context = ctx;
-		this.scale = 1;
 
 		this.registerEvents();
-	}
-
-	// Scale
-	private s(value: number) {
-		return value * this.scale;
-	}
-	// Scale inverse
-	private si(value: number) {
-		return value / this.scale;
 	}
 
 	addNode(newNode: FluoNode) {
@@ -80,8 +68,8 @@ export default class Workspace {
 			}
 
 			const overlapping = this.getOverlappingNode({
-				x: this.si(event.clientX),
-				y: this.si(event.clientY),
+				x: event.clientX,
+				y: event.clientY,
 			});
 
 			if (overlapping) {
@@ -94,8 +82,8 @@ export default class Workspace {
 					this.nodes.splice(this.nodes.indexOf(overlapping), 1)[0]
 				);
 				this.selectedNodeOffset = {
-					x: event.clientX - this.s(overlapping.position.x),
-					y: event.clientY - this.s(overlapping.position.y),
+					x: event.clientX - overlapping.position.x,
+					y: event.clientY - overlapping.position.y,
 				};
 				overlapping.style.fillColour = "#334155";
 			} else {
@@ -120,56 +108,19 @@ export default class Workspace {
 				if (event.buttons === 1) {
 					if (this.currentDragType === ICoarseDragTarget.NODE) {
 						this.selectedNode.position.x =
-							this.si(event.offsetX) - this.si(this.selectedNodeOffset.x);
+							event.offsetX - this.selectedNodeOffset.x;
 						this.selectedNode.position.y =
-							this.si(event.offsetY) - this.si(this.selectedNodeOffset.y);
+							event.offsetY - this.selectedNodeOffset.y;
 					} else {
 						this.translateALlNodes((node: FluoNode) => {
 							return {
-								x: this.si(event.movementX),
-								y: this.si(event.movementY),
+								x: event.movementX,
+								y: event.movementY,
 							};
 						});
 					}
 				}
 			}
-
-			this.render();
-		});
-		document.addEventListener("wheel", (event) => {
-			if (event.deltaY == 0) return;
-			else if (event.deltaY < 0) {
-				console.log(this.scale);
-				if (this.scale < 5) {
-					this.scale *= 1.1;
-
-					this.translateALlNodes((node: FluoNode) => {
-						return {
-							x: node.position.x * -0.1,
-							y: node.position.y * -0.1,
-						};
-					});
-				} else {
-					this.scale = 5;
-				}
-			} else {
-				console.log(this.scale);
-				this.scale /= 1.1;
-
-				if (this.scale > 0.1) {
-					this.translateALlNodes((node: FluoNode) => {
-						return {
-							x: node.position.x * 0.1,
-							y: node.position.y * 0.1,
-						};
-					});
-				} else {
-					this.scale = 0.1;
-				}
-			}
-
-			if (this.scale > 5) this.scale = 5;
-			else if (this.scale < 0.1) this.scale = 0.1;
 
 			this.render();
 		});
