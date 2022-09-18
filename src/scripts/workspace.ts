@@ -139,43 +139,42 @@ export default class Workspace {
 		document.addEventListener("wheel", (event) => {
 			if (event.deltaY == 0) return;
 			else if (event.deltaY < 0) {
-				if (this.scale > 0.1) {
-					this.scale *= 1.1;
-					// this.translateALlNodes((node: FluoNode) => {
-					// 	return {
-					// 		x: this.si(event.clientX - node.position.x),
-					// 		y: this.si(event.clientY - node.position.y),
-					// 	};
-					// });
-				} else {
-					this.scale = 0.1;
-				}
-			} else {
+				console.log(this.scale);
 				if (this.scale < 5) {
-					this.scale /= 1.1;
-					// this.translateALlNodes((node: FluoNode) => {
-					// 	return {
-					// 		x: this.si(node.position.x - this.s(event.clientX)) / 5,
-					// 		y: this.si(node.position.y - this.s(event.clientY)) / 5,
-					// 	};
-					// });
+					this.scale *= 1.1;
+
+					this.translateALlNodes((node: FluoNode) => {
+						return {
+							x: node.position.x * -0.1,
+							y: node.position.y * -0.1,
+						};
+					});
 				} else {
 					this.scale = 5;
 				}
+			} else {
+				console.log(this.scale);
+				this.scale /= 1.1;
+
+				if (this.scale > 0.1) {
+					this.translateALlNodes((node: FluoNode) => {
+						return {
+							x: node.position.x * 0.1,
+							y: node.position.y * 0.1,
+						};
+					});
+				} else {
+					this.scale = 0.1;
+				}
 			}
+
+			if (this.scale > 5) this.scale = 5;
+			else if (this.scale < 0.1) this.scale = 0.1;
 
 			this.render();
 		});
-		// document.addEventListener("resize", () => {
-		// 	console.log(123);
-		// 	this.context.canvas.height = window.innerHeight;
-		// 	this.context.canvas.width = window.innerWidth;
 
-		// 	this.render();
-		// });
 		window.onresize = () => {
-			console.log("resized!");
-
 			this.context.canvas.height = window.innerHeight;
 			this.context.canvas.width = window.innerWidth;
 			this.render();
