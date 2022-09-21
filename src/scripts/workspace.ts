@@ -14,8 +14,12 @@ export default class Workspace {
 	public selectedNode: FluoNode;
 	public selectedNodeOffset: IVector2;
 
+	private lastTouchPosition: IVector2;
+
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.context = ctx;
+
+		this.lastTouchPosition = { x: 0, y: 0 };
 
 		this.registerEvents();
 	}
@@ -62,6 +66,8 @@ export default class Workspace {
 		window.onload = () => {
 			document.body.style.background = this.context.canvas.style.background;
 		};
+
+		// function pointerDown(event: MouseEvent | TouchEvent) {}
 		document.addEventListener("mousedown", (event: MouseEvent) => {
 			if (event.target === this.context.canvas) {
 				document.body.style.cursor = "grabbing";
@@ -130,5 +136,70 @@ export default class Workspace {
 			this.context.canvas.width = window.innerWidth;
 			this.render();
 		};
+
+		document.addEventListener("touchstart", (event: TouchEvent) => {
+			const overlapping = this.getOverlappingNode({
+				x: event.changedTouches[0].clientX,
+				y: event.changedTouches[0].clientY,
+			});
+
+			if (overlapping) {
+				this.currentDragType = ICoarseDragTarget.NODE;
+				this.selectedNode = overlapping;
+
+				// Bring this node to the end of the workspace nodes array
+				// so that it renders on top of the other nodes
+				this.nodes.push(
+					this.nodes.splice(this.nodes.indexOf(overlapping), 1)[0]
+				);
+				this.selectedNodeOffset = {
+					x: event.changedTouches[0].clientX - overlapping.position.x,
+					y: event.changedTouches[0].clientY - overlapping.position.y,
+				};
+				overlapping.style.fillColour = "#334155";
+			} else {
+				this.currentDragType = ICoarseDragTarget.BACKGROUND;
+			}
+
+			this.render();
+		});
+		document.addEventListener("touchmove", (event: TouchEvent) => {
+			if (event.target === this.context.canvas) {
+				// if (event.buttons === 1) {
+				if (this.currentDragType === ICoarseDragTarget.NODE) {
+					this.selectedNode.position.x =
+						event.touches[0].clientX - this.selectedNodeOffset.x;
+					this.selectedNode.position.y =
+						event.touches[0].clientY - this.selectedNodeOffset.y;
+				} else {
+					this.translateALlNodes((node: FluoNode) => {
+						return {
+							x: event.touches[0].clientX - this.lastTouchPosition.x,
+							y: event.touches[0].clientY - this.lastTouchPosition.y,
+						};
+					});
+				}
+				this.lastTouchPosition = {
+					x: event.changedTouches[0].clientX,
+					y: event.changedTouches[0].clientY,
+				};
+				// }
+			}
+
+			this.render();
+		});
+		document.addEventListener("touchend", (event: TouchEvent) => {
+			if (this.selectedNode) this.selectedNode.style.fillColour = "#1e293b";
+			this.selectedNode = null;
+
+			this.currentDragType = ICoarseDragTarget.NONE;
+
+			this.lastTouchPosition = {
+				x: event.changedTouches[0].clientX,
+				y: event.changedTouches[0].clientY,
+			};
+
+			this.render();
+		});
 	}
 }
