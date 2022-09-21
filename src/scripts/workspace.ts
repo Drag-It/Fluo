@@ -25,11 +25,11 @@ export default class Workspace {
 
 	// Scale
 	private s(value: number) {
-		return value * this.scale;
+		return value * window.devicePixelRatio;
 	}
 	// Scale inverse
 	private si(value: number) {
-		return value / this.scale;
+		return value / window.devicePixelRatio;
 	}
 
 	addNode(newNode: FluoNode) {
@@ -133,43 +133,6 @@ export default class Workspace {
 					}
 				}
 			}
-
-			this.render();
-		});
-		document.addEventListener("wheel", (event) => {
-			if (event.deltaY == 0) return;
-			else if (event.deltaY < 0) {
-				console.log(this.scale);
-				if (this.scale < 5) {
-					this.scale *= 1.1;
-
-					this.translateALlNodes((node: FluoNode) => {
-						return {
-							x: node.position.x * -0.1,
-							y: node.position.y * -0.1,
-						};
-					});
-				} else {
-					this.scale = 5;
-				}
-			} else {
-				console.log(this.scale);
-				this.scale /= 1.1;
-
-				if (this.scale > 0.1) {
-					this.translateALlNodes((node: FluoNode) => {
-						return {
-							x: node.position.x * 0.1,
-							y: node.position.y * 0.1,
-						};
-					});
-				} else {
-					this.scale = 0.1;
-				}
-			}
-
-			if (this.scale > 5) this.scale = 5;
-			else if (this.scale < 0.1) this.scale = 0.1;
 
 			this.render();
 		});
