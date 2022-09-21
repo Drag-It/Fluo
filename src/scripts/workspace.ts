@@ -15,21 +15,29 @@ export default class Workspace {
 	public selectedNodeOffset: IVector2;
 
 	scale: number;
+	ratio: number;
 
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.context = ctx;
 		this.scale = 1;
+
+		const devicePixelRatio = window.devicePixelRatio || 1;
+		const backingStoreRatio =
+			this.context.webkitBackingStorePixelRatio ||
+			this.context.backingStorePixelRatio ||
+			1;
+		this.ratio = devicePixelRatio / backingStoreRatio;
 
 		this.registerEvents();
 	}
 
 	// Scale
 	private s(value: number) {
-		return value * window.devicePixelRatio;
+		return value * this.ratio;
 	}
 	// Scale inverse
 	private si(value: number) {
-		return value / window.devicePixelRatio;
+		return value / this.ratio;
 	}
 
 	addNode(newNode: FluoNode) {
