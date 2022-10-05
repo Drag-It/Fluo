@@ -1,5 +1,7 @@
-import Workspace from "./workspace";
-import { IVector2 } from "./utils";
+import Workspace, { StyleCategory } from "./workspace";
+import { IVector2, IO, drawLine } from "./utils";
+
+import { type IStyle } from "../interfaces/workspace";
 
 //#region Public interfaces
 export interface INodeIO {
@@ -10,21 +12,12 @@ export interface INodeParams {
 	inputs: Array<INodeIO>;
 	outputs: Array<INodeIO>;
 }
-export interface INodeStyle {
-	fillColour?: string;
-	strokeColour?: string;
-	inputFillColour?: string;
-	inputStrokeColour?: string;
-	width?: number;
-	strokeWidth?: number;
-	titleFontSize?: number;
-	fontColour?: string;
-	padding?: number;
-	titleToConnectionPointsPadding?: number;
-	connectionPointRadius?: number;
-	interInputConnectionPadding?: number;
-	connectionPointToLabelPadding?: number;
-	connectionPointLabelFontSize?: number;
+
+export interface INodeConnectionPointData {
+	screenSpacePosition: IVector2 | null;
+	io: IO;
+	type: any;
+	connectedTo: INodeConnectionPointData | null;
 }
 //#endregion
 
@@ -35,9 +28,12 @@ export class FluoNode {
 	workspace: Workspace;
 	context: CanvasRenderingContext2D;
 	position: IVector2;
-	style: INodeStyle;
-
+	style: IStyle;
+	connectionPoints: INodeConnectionPointData[];
 	dimensions: IVector2;
+
+	beingDragged: boolean;
+
 	//#endregion
 	constructor(
 		name: string,
@@ -45,118 +41,173 @@ export class FluoNode {
 		workspace: Workspace,
 		ctx: CanvasRenderingContext2D,
 		position: IVector2,
-		nodeStyle: INodeStyle
+		nodeStyle: IStyle
 	) {
 		this.name = name;
 		this.params = params;
 		this.workspace = workspace;
+		this.context = ctx;
+
 		// Deep copy these props so the original references are not mutated when accessed.
 		this.position = JSON.parse(JSON.stringify(position));
-		this.context = ctx;
 		this.style = JSON.parse(JSON.stringify(nodeStyle));
 
+		this.connectionPoints = [];
+		Object.keys(this.params).forEach((ioGroup: string) => {
+			this.params[ioGroup].forEach(() => {
+				this.connectionPoints.push({
+					screenSpacePosition: null,
+					io: ioGroup === "inputs" ? IO.INPUT : IO.OUTPUT,
+					type: Number,
+					connectedTo: null,
+				});
+			});
+		});
+
 		this.dimensions = {
-			x: this.style.width,
+			x: this.style.node.width,
 			y: this.calculateNodeHeight(),
 		};
 
 		workspace.addNode(this);
-		this.setContextWithStyleSettings();
+		workspace.setContextWithStyleSettings(StyleCategory.NODE);
 		this.drawNode();
 	}
 
 	//#region Methods
-	private setContextWithStyleSettings() {
-		this.context.fillStyle = this.style.fillColour;
-		this.context.strokeStyle = this.style.strokeColour;
-		this.context.lineWidth = this.style.strokeWidth;
-		this.context.font = this.style.titleFontSize + "px Monospace";
-	}
-
 	private calculateNodeHeight() {
+		/* TODO: Calculate based on current node properties;
+		don't just assume all connection points are inputs and connected. */
 		return (
-			this.style.padding * 2 +
-			this.style.titleFontSize +
-			this.style.titleToConnectionPointsPadding +
-			(this.style.connectionPointRadius * 2 >
-			this.style.connectionPointLabelFontSize
-				? this.style.connectionPointRadius * 2
-				: this.style.connectionPointLabelFontSize) +
+			this.style.node.padding * 2 +
+			this.style.node.title.size +
+			this.style.node.inputs.titleToConnectionPointsPadding +
+			(this.style.node.inputs.connected.radius * 2 > this.style.node.inputs.labels.size
+				? this.style.node.inputs.connected.radius * 2
+				: this.style.node.inputs.labels.size) +
 			(this.params.inputs.length >= 2
-				? (this.params.inputs.length - 1) *
-				  this.style.interInputConnectionPadding
+				? (this.params.inputs.length - 1) * this.style.node.inputs.interPadding
 				: 0)
 		);
 	}
 
 	private drawNode() {
-		this.setContextWithStyleSettings();
-
 		//#region Draw the node body
 		const nodeHeight = this.calculateNodeHeight();
 		this.dimensions.y = nodeHeight;
 
+		this.beingDragged
+			? this.workspace.setContextWithStyleSettings(StyleCategory.NODE_SELECTED)
+			: this.workspace.setContextWithStyleSettings(StyleCategory.NODE);
 		this.context.beginPath();
-		this.context.rect(
-			this.position.x,
-			this.position.y,
-			this.style.width,
-			nodeHeight
-		);
+		this.context.rect(this.position.x, this.position.y, this.style.node.width, nodeHeight);
 		this.context.fill();
 		this.context.stroke();
-		//#endregion
-		this.context.fillStyle = this.style.inputFillColour;
-		this.context.strokeStyle = this.style.inputStrokeColour;
-
-		//#region Draw the input connection points
-		this.params.inputs.forEach((input: INodeIO, index: number) => {
-			const yLevel =
-				this.position.y +
-				this.style.padding +
-				this.style.titleFontSize +
-				this.style.titleToConnectionPointsPadding +
-				index * this.style.interInputConnectionPadding +
-				this.style.connectionPointRadius;
-			// Circle
-			this.context.beginPath();
-			this.context.arc(
-				this.position.x + this.style.padding + this.style.connectionPointRadius,
-				yLevel,
-				this.style.connectionPointRadius,
-				0,
-				2 * Math.PI,
-				false
-			);
-
-			// Label
-			this.context.font =
-				this.style.connectionPointLabelFontSize + "px Monospace";
-			this.context.fillText(
-				input.name,
-				this.position.x +
-					this.style.padding +
-					this.style.connectionPointRadius * 2 +
-					this.style.connectionPointToLabelPadding,
-				yLevel + this.style.connectionPointLabelFontSize / 4
-			);
-			this.context.fill();
-			this.context.stroke();
-		});
-
 		//#endregion
 
 		//#region Node Title
-		this.context.fill();
-		this.context.stroke();
-		this.context.fillStyle = this.style.fontColour;
-		this.context.font = this.style.titleFontSize + "px Monospace";
+		this.workspace.setContextWithStyleSettings(StyleCategory.TEXT_TITLE);
+		this.context.beginPath();
 		this.context.fillText(
 			this.name,
-			this.position.x + this.style.padding,
-			this.position.y + this.style.titleFontSize / 1.2 + this.style.padding
+			this.position.x + this.style.node.padding,
+			this.position.y + this.style.node.title.size / 1.2 + this.style.node.padding
 		);
-		//#endregion2
+		this.context.fill();
+		//#endregion
+
+		//#region Draw the connection points
+		Object.keys(this.params).forEach((ioGroup: string) => {
+			const io = ioGroup === "inputs" ? IO.INPUT : IO.OUTPUT;
+			this.params[ioGroup].forEach((point: INodeIO, index: number) => {
+				//TODO: Style differently based on connection state.
+
+				io === IO.INPUT
+					? this.workspace.setContextWithStyleSettings(
+							StyleCategory.CONNECTION_POINT_INPUT_CONNECTED
+					  )
+					: this.workspace.setContextWithStyleSettings(
+							StyleCategory.CONNECTION_POINT_OUTPUT_CONNECTED
+					  );
+
+				const yLevel =
+					this.position.y +
+					this.style.node.padding +
+					this.style.node.title.size +
+					this.style.node.inputs.titleToConnectionPointsPadding +
+					index * this.style.node.inputs.interPadding +
+					this.style.node.inputs.connected.radius;
+
+				const pointPosX =
+					io === IO.INPUT
+						? this.position.x + this.style.node.padding + this.style.node.inputs.connected.radius
+						: this.position.x +
+						  this.dimensions.x -
+						  this.style.node.padding -
+						  this.style.node.inputs.connected.radius;
+
+				const p = this.connectionPoints[index + (io === IO.OUTPUT ? this.params.inputs.length : 0)];
+
+				// Assign position to each connection point so intersections can be checked later.
+				p.screenSpacePosition = {
+					x: pointPosX,
+					y: yLevel,
+				};
+
+				//#region Circle
+				this.context.beginPath();
+				this.context.arc(
+					pointPosX,
+					yLevel,
+					this.style.node.inputs.connected.radius,
+					0,
+					2 * Math.PI,
+					false
+				);
+				this.context.fill();
+				this.context.stroke();
+				//#endregion
+
+				//#region Connection point label
+				const labelPosX =
+					io === IO.INPUT
+						? this.position.x +
+						  this.style.node.padding +
+						  this.style.node.inputs.connected.radius * 2 +
+						  this.style.node.inputs.pointToLabelPadding
+						: this.position.x +
+						  this.dimensions.x -
+						  this.style.node.padding -
+						  this.style.node.inputs.connected.radius * 2 -
+						  this.style.node.inputs.pointToLabelPadding -
+						  point.name.length * (this.style.node.inputs.labels.size / 1.6);
+				/* TODO: quantify this magic 1.6. I think the
+				letters are 1.6 times taller than they are wide?
+				Seems about right.
+				Calculate accurately and insert accordingly. */
+
+				io === IO.INPUT
+					? this.workspace.setContextWithStyleSettings(StyleCategory.TEXT_LABEL_INPUT)
+					: this.workspace.setContextWithStyleSettings(StyleCategory.TEXT_LABEL_OUTPUT);
+
+				this.context.beginPath();
+				this.context.fillText(
+					point.name,
+					labelPosX,
+					yLevel + this.style.node.inputs.labels.size / 4 // TODO: What is this 4 doing?
+				);
+				this.context.fill();
+				this.context.stroke();
+				//#endregion
+
+				//#region Draw connection lines
+				if (p.io === IO.INPUT && p.connectedTo) {
+					drawLine(p.screenSpacePosition, p.connectedTo.screenSpacePosition, p, this.workspace);
+				}
+				//#endregion
+			});
+		});
+		//#endregion
 	}
 
 	translate(newPositionDelta: IVector2) {
@@ -165,7 +216,6 @@ export class FluoNode {
 	}
 
 	render() {
-		this.setContextWithStyleSettings();
 		this.drawNode();
 	}
 

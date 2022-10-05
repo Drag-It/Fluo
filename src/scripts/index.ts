@@ -1,29 +1,13 @@
-import { FluoNode, INodeStyle } from "./node";
-import Workspace, { ICoarseDragTarget } from "./workspace";
+import { FluoNode } from "./node";
+import Workspace from "./workspace";
+import style from "../styles/style";
 
 const canvas = document.querySelector("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
 
-const style: INodeStyle = {
-	fillColour: "#1e293b",
-	strokeColour: "#334155",
-	inputFillColour: "#22c55e",
-	inputStrokeColour: "#166534",
-	width: 200,
-	strokeWidth: 2,
-	titleFontSize: 20,
-	fontColour: "#94a3b8",
-	padding: 5,
-	titleToConnectionPointsPadding: 15,
-	connectionPointRadius: 4,
-	interInputConnectionPadding: 32,
-	connectionPointToLabelPadding: 12,
-	connectionPointLabelFontSize: 14,
-};
-
-const workspace = new Workspace(ctx);
+const workspace = new Workspace(ctx, style);
 
 const node = new FluoNode(
 	"Node 1",
@@ -63,7 +47,7 @@ const node3 = new FluoNode(
 			{ name: "arg3", type: Number },
 			{ name: "arg4", type: Number },
 		],
-		outputs: [{ name: "arg4", type: String }],
+		outputs: [{ name: "argggg4", type: String }],
 	},
 	workspace,
 	ctx,
