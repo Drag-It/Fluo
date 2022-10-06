@@ -9,16 +9,11 @@ const ctx = canvas.getContext("2d");
 
 const workspace = new Workspace(ctx, style);
 
-const node = new FluoNode(
-	"Node 1",
+new FluoNode(
+	"On Start",
 	{
-		inputs: [
-			{ name: "arg1", type: Number },
-			{ name: "arg2", type: Number },
-			// { name: "arg3", type: Number },
-			// { name: "arg4", type: Number },
-		],
-		outputs: [{ name: "arg2", type: Number }],
+		inputs: [],
+		outputs: [{ name: "Output", type: Number }],
 	},
 	workspace,
 	ctx,
@@ -26,11 +21,11 @@ const node = new FluoNode(
 	style
 );
 
-const node2 = new FluoNode(
-	"Node 2",
+new FluoNode(
+	"Write data",
 	{
-		inputs: [{ name: "arg3", type: String }],
-		outputs: [{ name: "arg4", type: String }],
+		inputs: [{ name: "Input", type: Number }],
+		outputs: [],
 	},
 	workspace,
 	ctx,
@@ -38,19 +33,29 @@ const node2 = new FluoNode(
 	style
 );
 
-const node3 = new FluoNode(
-	"Node 3",
+new FluoNode(
+	"Read data",
 	{
-		inputs: [
-			{ name: "arg1", type: Number },
-			{ name: "arg2", type: Number },
-			{ name: "arg3", type: Number },
-			{ name: "arg4", type: Number },
-		],
-		outputs: [{ name: "argggg4", type: String }],
+		inputs: [{ name: "Input", type: Number }],
+		outputs: [],
 	},
 	workspace,
 	ctx,
 	{ x: 500, y: 200 },
+	style
+);
+
+new FluoNode(
+	"Add",
+	{
+		inputs: [
+			{ name: "A", type: Number },
+			{ name: "B", type: Number },
+		],
+		outputs: [{ name: "Sum", type: Number }],
+	},
+	workspace,
+	ctx,
+	{ x: 800, y: 300 },
 	style
 );

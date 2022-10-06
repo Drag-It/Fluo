@@ -69,7 +69,12 @@ export default class Workspace {
 	render() {
 		this.clear();
 		this.nodes.forEach((node: FluoNode) => {
-			node.render();
+			node.drawNode();
+		});
+
+		// Force the control lines to render above the nodes.
+		this.nodes.forEach((node: FluoNode) => {
+			node.drawConnectionLine();
 		});
 	}
 

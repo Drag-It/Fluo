@@ -36,7 +36,7 @@ function drawLine(
 	const bezierOffset =
 		dist(start, end) * workspace.style.connectionLine.curviness * directionMultiplier;
 
-	workspace.setContextWithStyleSettings(StyleCategory.CONNECTION_LINE);
+	// workspace.setContextWithStyleSettings(StyleCategory.CONNECTION_LINE);
 
 	workspace.context.beginPath();
 	workspace.context.moveTo(start.x, start.y);

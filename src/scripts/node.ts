@@ -1,5 +1,5 @@
 import Workspace, { StyleCategory } from "./workspace";
-import { IVector2, IO, drawLine } from "./utils";
+import { type IVector2, IO, drawLine } from "./utils";
 
 import { type IStyle } from "../interfaces/workspace";
 
@@ -91,7 +91,7 @@ export class FluoNode {
 		);
 	}
 
-	private drawNode() {
+	drawNode() {
 		//#region Draw the node body
 		const nodeHeight = this.calculateNodeHeight();
 		this.dimensions.y = nodeHeight;
@@ -146,10 +146,10 @@ export class FluoNode {
 						  this.style.node.padding -
 						  this.style.node.inputs.connected.radius;
 
-				const p = this.connectionPoints[index + (io === IO.OUTPUT ? this.params.inputs.length : 0)];
-
 				// Assign position to each connection point so intersections can be checked later.
-				p.screenSpacePosition = {
+				this.connectionPoints[
+					index + (io === IO.OUTPUT ? this.params.inputs.length : 0)
+				].screenSpacePosition = {
 					x: pointPosX,
 					y: yLevel,
 				};
@@ -199,24 +199,36 @@ export class FluoNode {
 				this.context.fill();
 				this.context.stroke();
 				//#endregion
-
-				//#region Draw connection lines
-				if (p.io === IO.INPUT && p.connectedTo) {
-					drawLine(p.screenSpacePosition, p.connectedTo.screenSpacePosition, p, this.workspace);
-				}
-				//#endregion
 			});
 		});
 		//#endregion
 	}
 
+	drawConnectionLine() {
+		this.params.inputs.forEach((_: INodeIO, index: number) => {
+			const p = this.connectionPoints[index];
+
+			if (p.connectedTo) {
+				const gradient = this.context.createLinearGradient(
+					p.screenSpacePosition.x,
+					p.screenSpacePosition.y,
+					p.connectedTo.screenSpacePosition.x,
+					p.connectedTo.screenSpacePosition.y
+				);
+				gradient.addColorStop(0, this.style.node.inputs.connected.colour);
+				gradient.addColorStop(1, this.style.node.outputs.connected.colour);
+				this.context.strokeStyle = gradient;
+
+				if (p.connectedTo) {
+					drawLine(p.screenSpacePosition, p.connectedTo.screenSpacePosition, p, this.workspace);
+				}
+			}
+		});
+	}
+
 	translate(newPositionDelta: IVector2) {
 		this.position.x += newPositionDelta.x;
 		this.position.y += newPositionDelta.y;
-	}
-
-	render() {
-		this.drawNode();
 	}
 
 	isOverlapping(position: IVector2) {
