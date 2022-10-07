@@ -110,9 +110,56 @@ export class FluoNode {
 		this.context.beginPath();
 		this.context.fillText(
 			this.name,
-			this.position.x + this.style.node.padding,
+			this.position.x +
+				this.style.node.padding +
+				this.style.node.inputs.connected.flowControl.size +
+				this.style.node.title.flowControlPadding,
 			this.position.y + this.style.node.title.size / 1.2 + this.style.node.padding
 		);
+		this.context.fill();
+		//#endregion
+
+		//#region Draw the control flow points
+		const cfY = this.position.y + this.style.node.padding + this.style.node.title.size / 4;
+		let cfX = this.position.x + this.style.node.padding;
+
+		// Input
+		this.context.beginPath();
+		this.context.moveTo(cfX, cfY);
+		this.context.lineTo(cfX, cfY + this.style.node.inputs.connected.flowControl.size);
+		this.context.lineTo(
+			cfX +
+				Math.sqrt(
+					this.style.node.inputs.connected.flowControl.size ** 2 -
+						(this.style.node.inputs.connected.flowControl.size / 2) ** 2
+				),
+			cfY + this.style.node.inputs.connected.flowControl.size / 2
+		);
+		this.context.closePath();
+		this.context.fill();
+
+		cfX =
+			this.position.x +
+			this.style.node.width -
+			this.style.node.padding -
+			Math.sqrt(
+				this.style.node.outputs.connected.flowControl.size ** 2 -
+					(this.style.node.outputs.connected.flowControl.size / 2) ** 2
+			);
+
+		//Output
+		this.context.beginPath();
+		this.context.moveTo(cfX, cfY);
+		this.context.lineTo(cfX, cfY + this.style.node.outputs.connected.flowControl.size);
+		this.context.lineTo(
+			cfX +
+				Math.sqrt(
+					this.style.node.outputs.connected.flowControl.size ** 2 -
+						(this.style.node.outputs.connected.flowControl.size / 2) ** 2
+				),
+			cfY + this.style.node.outputs.connected.flowControl.size / 2
+		);
+		this.context.closePath();
 		this.context.fill();
 		//#endregion
 

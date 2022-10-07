@@ -20,6 +20,10 @@ interface ITextStyle {
 	colour: string;
 }
 
+interface ITextTitleStyle extends ITextStyle {
+	flowControlPadding: number;
+}
+
 interface IIndividualConnectionPointStyle {
 	/**
 	 * The radius of a connection point.
@@ -42,6 +46,18 @@ interface IIndividualConnectionPointStyle {
 
 		/**
 		 * The colour of a connection point's border.
+		 */
+		colour: string;
+	};
+
+	flowControl: {
+		/**
+		 * The side lengths of the flow control triangle connection point.
+		 */
+		size: number;
+
+		/**
+		 * The colour of the flow control triangle connection point.
 		 */
 		colour: string;
 	};
@@ -132,7 +148,7 @@ export interface IStyle {
 		/**
 		 * Style information about a node's title.
 		 */
-		title: ITextStyle;
+		title: ITextTitleStyle;
 
 		/**
 		 * Style information about a node's input connection points.
@@ -154,20 +170,15 @@ export interface IStyle {
 	 * Style information about connection lines between nodes in a workspace.
 	 */
 	connectionLine: {
-		/**
-		 * The width of a connection line.
-		 */
-		width: number;
-
-		/**
-		 * The colour of a connection line.
-		 */
-		colour: string;
-
 		//TODO: describe this better.
 		/**
 		 * How curvy the curve is.
 		 */
 		curviness: number;
+
+		/**
+		 * The width of a connection line.
+		 */
+		width: number;
 	};
 }

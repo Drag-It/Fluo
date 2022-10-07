@@ -18,6 +18,7 @@ const style: IStyle = {
 			font: "Monospace",
 			size: 20,
 			colour: "#94a3b8",
+			flowControlPadding: 10,
 		},
 		inputs: {
 			titleToConnectionPointsPadding: 15,
@@ -35,6 +36,10 @@ const style: IStyle = {
 					width: 2,
 					colour: "#166534",
 				},
+				flowControl: {
+					size: 12,
+					colour: "#94a3b8",
+				},
 			},
 			disconnected: {
 				radius: 4,
@@ -42,6 +47,10 @@ const style: IStyle = {
 				border: {
 					width: 2,
 					colour: "#166534",
+				},
+				flowControl: {
+					size: 12,
+					colour: "#94a3b8",
 				},
 			},
 		},
@@ -61,6 +70,10 @@ const style: IStyle = {
 					width: 2,
 					colour: "#86198f",
 				},
+				flowControl: {
+					size: 12,
+					colour: "#94a3b8",
+				},
 			},
 			disconnected: {
 				radius: 3,
@@ -69,14 +82,17 @@ const style: IStyle = {
 					width: 2,
 					colour: "#86198f",
 				},
+				flowControl: {
+					size: 12,
+					colour: "#94a3b8",
+				},
 			},
 		},
 		width: 200,
 	},
 	connectionLine: {
-		width: 3,
-		colour: "#ef4444",
 		curviness: 0.5,
+		width: 3,
 	},
 };
 

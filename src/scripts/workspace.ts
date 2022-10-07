@@ -163,7 +163,6 @@ export default class Workspace {
 				break;
 
 			case StyleCategory.CONNECTION_LINE:
-				this.context.strokeStyle = this.style.connectionLine.colour;
 				this.context.lineWidth = this.style.connectionLine.width;
 		}
 	}
