@@ -173,7 +173,9 @@ export default class Workspace {
 		};
 
 		document.addEventListener("mousedown", (event: MouseEvent) => {
-			if (this.overlappingConnectionPoint(this.nodes, event)) {
+			const overlappingConnectionPoint = this.overlappingConnectionPoint(this.nodes, event);
+
+			if (overlappingConnectionPoint) {
 				document.body.style.cursor = "normal";
 			} else if (event.target === this.context.canvas) {
 				document.body.style.cursor = "grabbing";
@@ -183,7 +185,6 @@ export default class Workspace {
 				x: event.clientX,
 				y: event.clientY,
 			});
-			const overlappingConnectionPoint = this.overlappingConnectionPoint(this.nodes, event);
 
 			if (overlappingConnectionPoint) {
 				this.currentDragType = CoarseDragTarget.CONNECTION;
@@ -262,10 +263,13 @@ export default class Workspace {
 						Hence, the inputs should hold the connection data. */
 
 						const outputConnection =
-							overlapping.io === IO.OUTPUT ? overlapping : this.currentConnectionPoint;
+							overlapping.io === IO.DATA_OUTPUT || overlapping.io === IO.FLOW_OUTPUT
+								? overlapping
+								: this.currentConnectionPoint;
 
 						const inputConnection =
-							this.currentConnectionPoint.io === IO.INPUT
+							this.currentConnectionPoint.io === IO.DATA_INPUT ||
+							this.currentConnectionPoint.io === IO.FLOW_INPUT
 								? this.currentConnectionPoint
 								: overlapping;
 

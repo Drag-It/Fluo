@@ -13,11 +13,21 @@ export interface INodeParams {
 	outputs: Array<INodeIO>;
 }
 
-export interface INodeConnectionPointData {
+interface INodeConnectionPointData {
 	screenSpacePosition: IVector2 | null;
 	io: IO;
+	connectedTo: INodeDataConnectionPointData | null;
+}
+
+export interface INodeDataConnectionPointData extends INodeConnectionPointData {
 	type: any;
-	connectedTo: INodeConnectionPointData | null;
+}
+
+export interface INodeConnectionPoints {
+	dataInputs: Array<INodeDataConnectionPointData>;
+	dataOutputs: Array<INodeDataConnectionPointData>;
+	controlFlowInput: INodeConnectionPointData;
+	controlFlowOutput: INodeConnectionPointData;
 }
 //#endregion
 
@@ -29,7 +39,7 @@ export class FluoNode {
 	context: CanvasRenderingContext2D;
 	position: IVector2;
 	style: IStyle;
-	connectionPoints: INodeConnectionPointData[];
+	connectionPoints: INodeConnectionPoints;
 	dimensions: IVector2;
 
 	beingDragged: boolean;
@@ -48,16 +58,16 @@ export class FluoNode {
 		this.workspace = workspace;
 		this.context = ctx;
 
-		// Deep copy these props so the original references are not mutated when accessed.
+		// Deep copy these props so the original references are not mutated.
 		this.position = JSON.parse(JSON.stringify(position));
 		this.style = JSON.parse(JSON.stringify(nodeStyle));
 
-		this.connectionPoints = [];
+		this.connectionPoints.dataInputs = this.connectionPoints.dataOutputs = [];
 		Object.keys(this.params).forEach((ioGroup: string) => {
 			this.params[ioGroup].forEach(() => {
 				this.connectionPoints.push({
 					screenSpacePosition: null,
-					io: ioGroup === "inputs" ? IO.INPUT : IO.OUTPUT,
+					io: ioGroup === "inputs" ? IO.DATA_INPUT : IO.DATA_OUTPUT,
 					type: Number,
 					connectedTo: null,
 				});
@@ -68,6 +78,8 @@ export class FluoNode {
 			x: this.style.node.width,
 			y: this.calculateNodeHeight(),
 		};
+
+		// this.f;
 
 		workspace.addNode(this);
 		workspace.setContextWithStyleSettings(StyleCategory.NODE);
@@ -165,11 +177,11 @@ export class FluoNode {
 
 		//#region Draw the connection points
 		Object.keys(this.params).forEach((ioGroup: string) => {
-			const io = ioGroup === "inputs" ? IO.INPUT : IO.OUTPUT;
+			const io = ioGroup === "inputs" ? IO.DATA_INPUT : IO.DATA_OUTPUT;
 			this.params[ioGroup].forEach((point: INodeIO, index: number) => {
 				//TODO: Style differently based on connection state.
 
-				io === IO.INPUT
+				io === IO.DATA_INPUT
 					? this.workspace.setContextWithStyleSettings(
 							StyleCategory.CONNECTION_POINT_INPUT_CONNECTED
 					  )
@@ -186,7 +198,7 @@ export class FluoNode {
 					this.style.node.inputs.connected.radius;
 
 				const pointPosX =
-					io === IO.INPUT
+					io === IO.DATA_INPUT
 						? this.position.x + this.style.node.padding + this.style.node.inputs.connected.radius
 						: this.position.x +
 						  this.dimensions.x -
@@ -195,7 +207,7 @@ export class FluoNode {
 
 				// Assign position to each connection point so intersections can be checked later.
 				this.connectionPoints[
-					index + (io === IO.OUTPUT ? this.params.inputs.length : 0)
+					index + (io === IO.DATA_OUTPUT ? this.params.inputs.length : 0)
 				].screenSpacePosition = {
 					x: pointPosX,
 					y: yLevel,
@@ -217,7 +229,7 @@ export class FluoNode {
 
 				//#region Connection point label
 				const labelPosX =
-					io === IO.INPUT
+					io === IO.DATA_INPUT
 						? this.position.x +
 						  this.style.node.padding +
 						  this.style.node.inputs.connected.radius * 2 +
@@ -233,7 +245,7 @@ export class FluoNode {
 				Seems about right.
 				Calculate accurately and insert accordingly. */
 
-				io === IO.INPUT
+				io === IO.DATA_INPUT
 					? this.workspace.setContextWithStyleSettings(StyleCategory.TEXT_LABEL_INPUT)
 					: this.workspace.setContextWithStyleSettings(StyleCategory.TEXT_LABEL_OUTPUT);
 

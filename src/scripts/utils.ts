@@ -22,8 +22,10 @@ function fact(x) {
 function canvasText(position: IVector2, textContent: string) {}
 
 enum IO {
-	INPUT,
-	OUTPUT,
+	DATA_INPUT,
+	DATA_OUTPUT,
+	FLOW_INPUT,
+	FLOW_OUTPUT,
 }
 
 function drawLine(
@@ -32,7 +34,8 @@ function drawLine(
 	currentPoint: INodeConnectionPointData,
 	workspace: Workspace
 ) {
-	const directionMultiplier = currentPoint.io === IO.INPUT ? -1 : 1;
+	const directionMultiplier =
+		currentPoint.io === IO.DATA_INPUT || currentPoint.io == IO.FLOW_INPUT ? -1 : 1;
 	const bezierOffset =
 		dist(start, end) * workspace.style.connectionLine.curviness * directionMultiplier;
 
